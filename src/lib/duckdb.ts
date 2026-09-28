@@ -1,10 +1,6 @@
 import * as duckdb from '@duckdb/duckdb-wasm'
 import { tableFromArrays } from 'apache-arrow'
 import Papa from 'papaparse'
-import mvpWorker from '@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url'
-import ehWorker from '@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url'
-import mvpWasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url'
-import ehWasm from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url'
 
 export type Source = 'Amazon' | 'Noon'
 export type Row = Record<string, unknown>
@@ -20,8 +16,11 @@ export function looksLikeReport(source: Source, text: string) {
 }
 
 const bundles: duckdb.DuckDBBundles = {
-  mvp: { mainModule: mvpWasm, mainWorker: mvpWorker },
-  eh: { mainModule: ehWasm, mainWorker: ehWorker },
+  mvp: {
+    mainModule: '/duckdb/duckdb-mvp.wasm',
+    mainWorker: '/duckdb/duckdb-browser-mvp.worker.js',
+  },
+  eh: { mainModule: '/duckdb/duckdb-eh.wasm', mainWorker: '/duckdb/duckdb-browser-eh.worker.js' },
 }
 
 const number = (column: string) => `COALESCE(TRY_CAST(REPLACE("${column}", ',', '') AS DOUBLE), 0)`

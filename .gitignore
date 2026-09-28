@@ -9,3 +9,8 @@ dist/
 *.parquet
 *.xlsx
 *.xls
+
+.next/
+out/
+public/duckdb/
+next-env.d.ts

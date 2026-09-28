@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Open the URL printed by Vite. The workspace loads synthetic Amazon and Noon reports on startup. The **Amazon CSV** and **Noon CSV** controls import matching exports from the local device. The first import replaces the synthetic session; later imports add or replace a marketplace. **Restore synthetic demo** clears the imported session.
+Open the URL printed by Next.js. The workspace loads synthetic Amazon and Noon reports on startup. The **Amazon CSV** and **Noon CSV** controls import matching exports from the local device. The first import replaces the synthetic session; later imports add or replace a marketplace. **Restore synthetic demo** clears the imported session.
 
 ## Analysis workspace
 
