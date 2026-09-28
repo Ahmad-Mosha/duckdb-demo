@@ -2,8 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Area,
   AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
   ResponsiveContainer,
+  Scatter,
+  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
@@ -36,6 +40,16 @@ const money = (n: number, compact = false) =>
     notation: compact ? 'compact' : 'standard',
   }).format(n)
 const pct = (n: number) => `${n.toFixed(1)}%`
+const chartInk = '#eceeef'
+const chartMuted = '#8d9296'
+const chartGrid = '#303337'
+const tooltipStyle = {
+  background: '#181a1d',
+  border: '1px solid #393d41',
+  borderRadius: 2,
+  color: '#eceeef',
+  fontSize: 11,
+}
 const sampleSQL = `SELECT
   marketplace,
   COUNT(*) AS events,
@@ -56,7 +70,7 @@ function Metric({
   label: string
   amount: string
   hint?: string
-  tone?: 'green' | 'amber'
+  tone?: 'strong' | 'subtle'
 }) {
   return (
     <div className="metric">
@@ -149,6 +163,13 @@ function DataTable({
           </tr>
         </thead>
         <tbody>
+          {!sorted.length && (
+            <tr>
+              <td className="table-empty" colSpan={columns.length}>
+                No matching rows.
+              </td>
+            </tr>
+          )}
           {sorted.map((row, i) => (
             <tr key={i}>
               {columns.map((col) => (
@@ -299,6 +320,7 @@ export default function App() {
   const productRows = (snapshot?.products ?? []).filter((r) =>
     label(r, 'sku').toLowerCase().includes(productSearch.toLowerCase()),
   )
+  const feeRows = productRows.filter((r) => value(r, 'sales') > 0 && r.fee_rate != null)
   const concentration = snapshot?.concentration ?? []
   const topThree = concentration.length
     ? value(concentration[Math.min(2, concentration.length - 1)], 'cumulative_pct')
@@ -491,7 +513,7 @@ export default function App() {
                     label="MARKETPLACE FEES"
                     amount={money(total('fees'))}
                     hint={`${pct(feeRate)} of reported sales`}
-                    tone="amber"
+                    tone="subtle"
                   />
                   <Metric
                     label="OTHER ADJUSTMENTS"
@@ -502,7 +524,7 @@ export default function App() {
                     label="COMMERCE SETTLEMENT"
                     amount={money(total('commerce_settlement'))}
                     hint="Excludes payout transfers"
-                    tone="green"
+                    tone="strong"
                   />
                 </div>
                 <div className="overview-grid">
@@ -541,6 +563,63 @@ export default function App() {
                       title="Marketplace comparison"
                       aside={`${summary.length} loaded`}
                     />
+                    <div
+                      className="comparison-chart"
+                      aria-label="Sales and settlement by marketplace"
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={summary}
+                          layout="vertical"
+                          barGap={5}
+                          margin={{ top: 12, right: 18, bottom: 4, left: 0 }}
+                        >
+                          <CartesianGrid stroke={chartGrid} horizontal={false} />
+                          <XAxis
+                            type="number"
+                            tick={{ fill: chartMuted, fontSize: 10 }}
+                            tickFormatter={(n: number) => money(n, true)}
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <YAxis
+                            type="category"
+                            dataKey="marketplace"
+                            tick={{ fill: chartInk, fontSize: 11 }}
+                            tickLine={false}
+                            axisLine={false}
+                            width={70}
+                          />
+                          <Tooltip
+                            contentStyle={tooltipStyle}
+                            formatter={(n, name) => [money(Number(n)), name]}
+                            cursor={{ fill: '#24272a' }}
+                          />
+                          <Bar
+                            dataKey="sales"
+                            name="Reported sales"
+                            fill={chartInk}
+                            barSize={10}
+                            isAnimationActive={false}
+                          />
+                          <Bar
+                            dataKey="commerce_settlement"
+                            name="Commerce settlement"
+                            fill={chartMuted}
+                            barSize={10}
+                            isAnimationActive={false}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="chart-legend comparison-legend">
+                      <span>
+                        <i className="legend-key sales" /> Reported sales
+                      </span>
+                      <span>
+                        <i className="legend-key settlement" /> Commerce settlement
+                      </span>
+                    </div>
                     <DataTable
                       rows={summary}
                       sortKey="sales"
@@ -694,9 +773,94 @@ export default function App() {
                     ]}
                   />
                 </section>
+                <section className="panel fee-analysis">
+                  <SectionTitle
+                    eyebrow="02 / FEE PRESSURE"
+                    title="Sales versus fee rate"
+                    aside={`${feeRows.length} positive-sales SKU rows`}
+                  />
+                  <p className="chart-description">
+                    Each mark is one SKU on one marketplace. Higher marks lose more of reported
+                    sales to marketplace fees; farther-right marks affect more sales.
+                  </p>
+                  <div className="scatter-chart" aria-label="SKU fee rate versus reported sales">
+                    {feeRows.length ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ScatterChart margin={{ top: 14, right: 22, bottom: 16, left: 0 }}>
+                          <CartesianGrid stroke={chartGrid} strokeDasharray="2 4" />
+                          <XAxis
+                            type="number"
+                            dataKey="sales"
+                            name="Reported sales"
+                            tick={{ fill: chartMuted, fontSize: 10 }}
+                            tickFormatter={(n: number) => money(n, true)}
+                            tickLine={false}
+                            axisLine={false}
+                            label={{
+                              value: 'REPORTED SALES',
+                              position: 'insideBottom',
+                              offset: -12,
+                              fill: chartMuted,
+                              fontSize: 9,
+                            }}
+                          />
+                          <YAxis
+                            type="number"
+                            dataKey="fee_rate"
+                            name="Fee / sales"
+                            tick={{ fill: chartMuted, fontSize: 10 }}
+                            tickFormatter={(n: number) => `${n}%`}
+                            tickLine={false}
+                            axisLine={false}
+                            width={50}
+                          />
+                          <Tooltip
+                            content={({ active, payload }) => {
+                              const row = payload?.[0]?.payload as Row | undefined
+                              if (!active || !row) return null
+                              return (
+                                <div className="scatter-tooltip">
+                                  <code>{label(row, 'sku')}</code>
+                                  <span>{label(row, 'marketplace')}</span>
+                                  <strong>{money(value(row, 'sales'))} sales</strong>
+                                  <strong>{pct(value(row, 'fee_rate'))} fee / sales</strong>
+                                </div>
+                              )
+                            }}
+                          />
+                          <Scatter
+                            name="Amazon"
+                            data={feeRows.filter((r) => label(r, 'marketplace') === 'Amazon')}
+                            fill={chartInk}
+                            isAnimationActive={false}
+                          />
+                          <Scatter
+                            name="Noon"
+                            data={feeRows.filter((r) => label(r, 'marketplace') === 'Noon')}
+                            fill={chartMuted}
+                            isAnimationActive={false}
+                          />
+                        </ScatterChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <Empty
+                        title="No products to plot"
+                        detail="Clear the SKU filter or select another source."
+                      />
+                    )}
+                  </div>
+                  <div className="chart-legend">
+                    <span>
+                      <i className="legend-key sales" /> Amazon
+                    </span>
+                    <span>
+                      <i className="legend-key settlement" /> Noon
+                    </span>
+                  </div>
+                </section>
                 <section className="panel">
                   <SectionTitle
-                    eyebrow="02 / PARETO"
+                    eyebrow="03 / PARETO"
                     title="Sales concentration"
                     aside="Window function · cumulative share"
                   />
@@ -733,45 +897,45 @@ export default function App() {
                     {days.length ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={days} margin={{ top: 12, right: 10, bottom: 0, left: 0 }}>
-                          <CartesianGrid stroke="#27313c" vertical={false} />
+                          <CartesianGrid stroke={chartGrid} vertical={false} />
                           <XAxis
                             dataKey="day"
-                            tick={{ fill: '#8a98a7', fontSize: 11 }}
+                            tick={{ fill: chartMuted, fontSize: 11 }}
                             tickLine={false}
                             axisLine={false}
                             minTickGap={24}
                           />
                           <YAxis
-                            tick={{ fill: '#8a98a7', fontSize: 11 }}
+                            tick={{ fill: chartMuted, fontSize: 11 }}
                             tickLine={false}
                             axisLine={false}
                             tickFormatter={(n: number) => money(n, true)}
                             width={56}
                           />
                           <Tooltip
-                            contentStyle={{
-                              background: '#141d27',
-                              border: '1px solid #35414d',
-                              borderRadius: 6,
-                              fontSize: 12,
-                            }}
+                            contentStyle={tooltipStyle}
                             formatter={(n) => money(Number(n))}
                           />
                           <Area
                             type="monotone"
                             dataKey="Amazon"
-                            stroke="#e7ae68"
-                            fill="#e7ae68"
+                            connectNulls
+                            stroke={chartInk}
+                            fill={chartInk}
                             fillOpacity={0.08}
                             strokeWidth={2}
+                            isAnimationActive={false}
                           />
                           <Area
                             type="monotone"
                             dataKey="Noon"
-                            stroke="#69c9ad"
-                            fill="#69c9ad"
+                            connectNulls
+                            stroke={chartMuted}
+                            fill={chartMuted}
                             fillOpacity={0.08}
                             strokeWidth={2}
+                            strokeDasharray="5 3"
+                            isAnimationActive={false}
                           />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -790,6 +954,9 @@ export default function App() {
                       <i className="source-dot noon" /> Noon
                     </span>
                   </div>
+                  <p className="panel-footnote">
+                    Lines connect recorded dates. A missing source date is not counted as zero.
+                  </p>
                 </section>
                 <div className="activity-grid">
                   <section className="panel">
