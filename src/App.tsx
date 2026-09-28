@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   Area,
   AreaChart,
@@ -27,19 +27,15 @@ import {
   Timer,
   TrendingUp,
 } from 'lucide-react'
-import { db, looksLikeReport, type Row, type Source } from './lib/duckdb'
-import { getSchema, getSnapshot, label, value, type Scope, type Snapshot } from './lib/analytics'
+import { useCommerceWorkspace } from '@/hooks/use-commerce-workspace'
+import { executeQuery } from '@/lib/commerce/session'
+import { defaultQuery as sampleSQL } from '@/lib/commerce/queries'
+import { filterProducts, feeProducts } from '@/lib/commerce/analytics'
+import type { Row, Source } from '@/lib/commerce/types'
+import { money, pct, label, value } from '@/lib/format'
 
 type Tab = 'Overview' | 'Products' | 'Activity' | 'SQL'
-type Mode = 'Demo' | 'Private'
 
-const money = (n: number, compact = false) =>
-  new Intl.NumberFormat('en-EG', {
-    maximumFractionDigits: compact ? 1 : 2,
-    minimumFractionDigits: compact ? 0 : 2,
-    notation: compact ? 'compact' : 'standard',
-  }).format(n)
-const pct = (n: number) => `${n.toFixed(1)}%`
 const chartInk = '#eceeef'
 const chartMuted = '#8d9296'
 const chartGrid = '#303337'
@@ -50,16 +46,6 @@ const tooltipStyle = {
   color: '#eceeef',
   fontSize: 11,
 }
-const sampleSQL = `SELECT
-  marketplace,
-  COUNT(*) AS events,
-  ROUND(SUM(sales_amount), 2) AS reported_sales,
-  ROUND(SUM(fee_amount), 2) AS fees,
-  ROUND(SUM(settlement_amount), 2) AS settlement
-FROM commerce_events
-WHERE NOT is_payout
-GROUP BY marketplace
-ORDER BY reported_sales DESC;`
 
 function Metric({
   label: title,
@@ -186,15 +172,9 @@ function DataTable({
 }
 
 export default function App() {
+  const workspace = useCommerceWorkspace()
+  const { data, scope, setScope, busy, error } = workspace
   const [tab, setTab] = useState<Tab>('Overview')
-  const [scope, setScope] = useState<Scope>('All')
-  const [mode, setMode] = useState<Mode>('Demo')
-  const [ready, setReady] = useState(false)
-  const [busy, setBusy] = useState('Starting DuckDB')
-  const [error, setError] = useState('')
-  const [revision, setRevision] = useState(0)
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null)
-  const [schema, setSchema] = useState<Row[]>([])
   const [productSearch, setProductSearch] = useState('')
   const [sql, setSql] = useState(sampleSQL)
   const [sqlRows, setSqlRows] = useState<Row[]>([])
@@ -202,146 +182,50 @@ export default function App() {
   const [sqlError, setSqlError] = useState('')
   const amazonInput = useRef<HTMLInputElement>(null)
   const noonInput = useRef<HTMLInputElement>(null)
+  const snapshot = data?.snapshot ?? null
+  const schema = data?.schema ?? []
+  const sources = data?.sources ?? []
+  const mode = data?.mode ?? 'Demo'
+  const ready = !!data
+  const analytics = data?.analytics
+  const summary = snapshot?.summary ?? []
+  const feeRate = analytics?.feeRate ?? 0
+  const totalRows = analytics?.rows ?? 0
+  const productRows = filterProducts(snapshot?.products ?? [], productSearch)
+  const feeRows = feeProducts(productRows)
+  const concentration = snapshot?.concentration ?? []
+  const topThree = analytics?.topThree ?? 0
+  const highFee = analytics?.highFee
+  const coverage = analytics?.coverage ?? ''
+  const periodsDiffer = analytics?.periodsDiffer ?? false
+  const days = analytics?.days ?? []
 
-  async function loadDemo() {
-    setError('')
-    setBusy('Loading synthetic reports')
-    try {
-      await db.clear()
-      for (const source of ['Amazon', 'Noon'] as Source[]) {
-        const response = await fetch(`/demo/${source.toLowerCase()}.csv`)
-        if (!response.ok) throw new Error(`Could not load ${source} demo data`)
-        await db.load(source, new Uint8Array(await response.arrayBuffer()))
-      }
-      setSnapshot(null)
-      setSqlRows([])
-      setSqlMs(null)
-      setSqlError('')
-      setMode('Demo')
-      setScope('All')
-      setRevision((n) => n + 1)
-    } finally {
-      setBusy('')
-    }
-  }
-
-  useEffect(() => {
-    let live = true
-    async function start() {
-      try {
-        await db.initialize()
-        if (live) {
-          setReady(true)
-          await loadDemo()
-        }
-      } catch (cause) {
-        if (live) {
-          setError(String(cause))
-          setBusy('')
-        }
-      }
-    }
-    start()
-    return () => {
-      live = false
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!ready || !revision) return
-    let live = true
-    Promise.all([getSnapshot(scope), getSchema()])
-      .then(([next, nextSchema]) => {
-        if (live) {
-          setSnapshot(next)
-          setSchema(nextSchema)
-        }
-      })
-      .catch((cause) => {
-        if (live) setError(String(cause))
-      })
-    return () => {
-      live = false
-    }
-  }, [ready, revision, scope])
-
-  async function importFile(source: Source, file?: File) {
-    if (!file) return
-    setError('')
-    setBusy(`Reading ${source} report`)
-    try {
-      const data = new Uint8Array(await file.arrayBuffer())
-      const header = new TextDecoder().decode(data.slice(0, 4096))
-      if (!looksLikeReport(source, header))
-        throw new Error(`File does not match the supported ${source} export.`)
-      await db.load(source, data)
-      if (mode === 'Demo') {
-        await db.keepOnly(source)
-        setScope(source)
-      }
-      setSnapshot(null)
-      setSqlRows([])
-      setSqlMs(null)
-      setSqlError('')
-      setMode('Private')
-      setRevision((n) => n + 1)
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : String(cause))
-    } finally {
-      setBusy('')
-      if (amazonInput.current) amazonInput.current.value = ''
-      if (noonInput.current) noonInput.current.value = ''
-    }
-  }
-
-  async function runSQL() {
-    setSqlError('')
+  function clearResults() {
     setSqlRows([])
     setSqlMs(null)
-    const statement = sql.trim().replace(/;\s*$/, '')
-    if (!/^(SELECT|WITH)\b/i.test(statement) || statement.includes(';')) {
-      setSqlError('Enter one SELECT or WITH query. The SQL workspace is read-only.')
-      return
-    }
-    const start = performance.now()
+    setSqlError('')
+  }
+  async function loadDemo() {
+    await workspace.loadDemo()
+    clearResults()
+  }
+  async function importFile(source: Source, file?: File) {
+    if (!file) return
+    await workspace.importFile(source, file)
+    clearResults()
+    if (amazonInput.current) amazonInput.current.value = ''
+    if (noonInput.current) noonInput.current.value = ''
+  }
+  async function runSQL() {
+    clearResults()
     try {
-      const rows = await db.query(`SELECT * FROM (${statement}) AS lab_query LIMIT 200`)
-      setSqlRows(rows)
-      setSqlMs(performance.now() - start)
-    } catch (cause) {
-      setSqlError(cause instanceof Error ? cause.message : String(cause))
+      const result = await executeQuery(sql)
+      setSqlRows(result.rows)
+      setSqlMs(result.elapsedMs)
+    } catch (error) {
+      setSqlError(error instanceof Error ? error.message : String(error))
     }
   }
-
-  const summary = snapshot?.summary ?? []
-  const total = (key: string) => summary.reduce((sum, row) => sum + value(row, key), 0)
-  const feeRate = total('sales') ? (-100 * total('fees')) / total('sales') : 0
-  const totalRows = total('rows')
-  const productRows = (snapshot?.products ?? []).filter((r) =>
-    label(r, 'sku').toLowerCase().includes(productSearch.toLowerCase()),
-  )
-  const feeRows = productRows.filter((r) => value(r, 'sales') > 0 && r.fee_rate != null)
-  const concentration = snapshot?.concentration ?? []
-  const topThree = concentration.length
-    ? value(concentration[Math.min(2, concentration.length - 1)], 'cumulative_pct')
-    : 0
-  const highFee = [...(snapshot?.products ?? [])]
-    .filter((r) => value(r, 'sales') > 0)
-    .sort((a, b) => value(b, 'fee_rate') - value(a, 'fee_rate'))[0]
-  const coverage = summary
-    .map((r) => `${label(r, 'marketplace')} ${label(r, 'first_day')} – ${label(r, 'last_day')}`)
-    .join(' · ')
-  const periodsDiffer = new Set(summary.map((r) => `${r.first_day}/${r.last_day}`)).size > 1
-  const days = useMemo(() => {
-    const index = new Map<string, Record<string, number | string | null>>()
-    for (const row of snapshot?.daily ?? []) {
-      const day = label(row, 'day')
-      const existing = index.get(day) ?? { day, Amazon: null, Noon: null }
-      existing[label(row, 'marketplace')] = value(row, 'sales')
-      index.set(day, existing)
-    }
-    return [...index.values()]
-  }, [snapshot])
 
   return (
     <div className="workbench">
@@ -393,7 +277,7 @@ export default function App() {
             className="reset-button"
             title="Restore synthetic demo"
             aria-label="Restore synthetic demo"
-            onClick={() => loadDemo().catch((cause) => setError(String(cause)))}
+            onClick={loadDemo}
           >
             <RotateCcw size={14} />
           </button>
@@ -450,14 +334,14 @@ export default function App() {
           <span className="strip-label">SOURCE SCOPE</span>
           <div className="scope-options">
             <button className={scope === 'All' ? 'selected' : ''} onClick={() => setScope('All')}>
-              ALL <small>{db.sources.length}</small>
+              ALL <small>{sources.length}</small>
             </button>
             {(['Amazon', 'Noon'] as Source[]).map((source) => (
               <button
                 key={source}
                 className={scope === source ? 'selected' : ''}
                 onClick={() => setScope(source)}
-                disabled={!db.sources.includes(source)}
+                disabled={!sources.includes(source)}
               >
                 <i className={`source-dot ${source.toLowerCase()}`} />
                 {source.toUpperCase()}
@@ -473,14 +357,14 @@ export default function App() {
               if (e.key === 'Enter') setTab('SQL')
             }}
           >
-            <Table2 size={13} /> COMMERCE_EVENTS <span>+ {db.sources.length} RAW</span>
+            <Table2 size={13} /> COMMERCE_EVENTS <span>+ {sources.length} RAW</span>
           </span>
         </div>
         {error && (
           <div className="alert">
             <CircleAlert size={16} />
             {error}
-            <button onClick={() => setError('')}>Dismiss</button>
+            <button onClick={workspace.dismissError}>Dismiss</button>
           </div>
         )}
         {!snapshot ? (
@@ -506,23 +390,23 @@ export default function App() {
                 <div className="metrics">
                   <Metric
                     label="REPORTED SALES"
-                    amount={money(total('sales'))}
+                    amount={money(analytics?.sales ?? 0)}
                     hint="Amazon product sales · Noon net proceeds"
                   />
                   <Metric
                     label="MARKETPLACE FEES"
-                    amount={money(total('fees'))}
+                    amount={money(analytics?.fees ?? 0)}
                     hint={`${pct(feeRate)} of reported sales`}
                     tone="subtle"
                   />
                   <Metric
                     label="OTHER ADJUSTMENTS"
-                    amount={money(total('other') - total('payouts'))}
+                    amount={money(analytics?.adjustments ?? 0)}
                     hint="Credits, subsidies, and other lines"
                   />
                   <Metric
                     label="COMMERCE SETTLEMENT"
-                    amount={money(total('commerce_settlement'))}
+                    amount={money(analytics?.settlement ?? 0)}
                     hint="Excludes payout transfers"
                     tone="strong"
                   />
@@ -537,24 +421,24 @@ export default function App() {
                     <div className="bridge-list">
                       <div>
                         <span>Reported sales</span>
-                        <strong>{money(total('sales'))}</strong>
+                        <strong>{money(analytics?.sales ?? 0)}</strong>
                       </div>
                       <div>
                         <span>Marketplace fees</span>
-                        <strong className="negative">{money(total('fees'))}</strong>
+                        <strong className="negative">{money(analytics?.fees ?? 0)}</strong>
                       </div>
                       <div>
                         <span>Credits & adjustments</span>
-                        <strong>{money(total('other') - total('payouts'))}</strong>
+                        <strong>{money(analytics?.adjustments ?? 0)}</strong>
                       </div>
                       <div className="bridge-total">
                         <span>Commerce settlement</span>
-                        <strong>{money(total('commerce_settlement'))}</strong>
+                        <strong>{money(analytics?.settlement ?? 0)}</strong>
                       </div>
                     </div>
                     <p className="panel-footnote">
-                      Payout transfers ({money(total('payouts'))}) are excluded. Product costs are
-                      not in these reports, so settlement is not profit.
+                      Payout transfers ({money(analytics?.payouts ?? 0)}) are excluded. Product
+                      costs are not in these reports, so settlement is not profit.
                     </p>
                   </section>
                   <section className="panel comparison">
@@ -690,10 +574,7 @@ export default function App() {
                     <div>
                       <CircleCheck size={17} />
                       <span>RECONCILIATION</span>
-                      <strong>
-                        {snapshot.quality.reduce((n, r) => n + value(r, 'unreconciled_rows'), 0)}{' '}
-                        unmatched rows
-                      </strong>
+                      <strong>{analytics?.unmatched ?? 0} unmatched rows</strong>
                       <small>Checks sales + fees + other against reported total.</small>
                     </div>
                   </div>
