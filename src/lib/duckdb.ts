@@ -1,4 +1,6 @@
 import * as duckdb from '@duckdb/duckdb-wasm'
+import { tableFromArrays } from 'apache-arrow'
+import Papa from 'papaparse'
 import mvpWorker from '@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url'
 import ehWorker from '@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url'
 import mvpWasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url'
@@ -28,6 +30,7 @@ export class CommerceDatabase {
   private database?: duckdb.AsyncDuckDB
   private connection?: duckdb.AsyncDuckDBConnection
   private loaded = new Set<Source>()
+  private importSequence = 0
 
   get sources() {
     return [...this.loaded]
@@ -51,17 +54,44 @@ export class CommerceDatabase {
   }
 
   async load(source: Source, data: Uint8Array) {
-    if (!this.database) throw new Error('DuckDB is not ready')
+    if (!this.database || !this.connection) throw new Error('DuckDB is not ready')
     const text = new TextDecoder().decode(data.slice(0, 4096))
     if (!looksLikeReport(source, text))
       throw new Error(`This does not look like the supported ${source} report.`)
 
-    const path = `${source.toLowerCase()}-upload.csv`
-    await this.database.registerFileBuffer(path, data)
-    const skip = source === 'Amazon' ? ', skip=8' : ''
-    await this.query(
-      `CREATE OR REPLACE TABLE ${source.toLowerCase()}_raw AS SELECT * FROM read_csv_auto('${path}', header=true, all_varchar=true, delim=',', quote='"', escape='"', null_padding=true${skip})`,
+    let offset = 0
+    if (source === 'Amazon') {
+      let lines = 0
+      while (offset < data.length && lines < 8) {
+        if (data[offset] === 10) lines++
+        offset++
+      }
+      if (lines !== 8) throw new Error('Amazon report preamble is incomplete.')
+    }
+    const csv = new TextDecoder().decode(data.slice(offset))
+    const parsed = Papa.parse<Record<string, string>>(csv, {
+      header: true,
+      skipEmptyLines: 'greedy',
+    })
+    if (parsed.errors.length)
+      throw new Error(`${source} CSV parsing failed: ${parsed.errors[0].message}`)
+    const names = parsed.meta.fields ?? []
+    if (names.length !== 22 || !parsed.data.length)
+      throw new Error(`${source} report has an unexpected column count or no rows.`)
+    const columns = Object.fromEntries(
+      names.map((name) => [name, parsed.data.map((row) => row[name] ?? '')]),
     )
+    const table = tableFromArrays(columns)
+    this.importSequence++
+    const stage = `${source.toLowerCase()}_import_${this.importSequence}`
+    try {
+      await this.connection.insertArrowTable(table, { schema: 'main', name: stage })
+      await this.query(
+        `CREATE OR REPLACE TABLE ${source.toLowerCase()}_raw AS SELECT * FROM ${stage}`,
+      )
+    } finally {
+      await this.query(`DROP TABLE IF EXISTS ${stage}`)
+    }
     this.loaded.add(source)
     await this.refreshViews()
   }

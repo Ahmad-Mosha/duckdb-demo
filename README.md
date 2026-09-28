@@ -37,7 +37,7 @@ All money fields retain the report's sign. `sales_amount + fee_amount + other_am
 
 **Settlement is not profit.** Neither supplied report contains product cost. Amazon product sales and Noon net proceeds also have different source definitions, so the comparison is directional rather than an accounting-equivalent revenue comparison. Exact SKU strings are used as supplied; the app does not infer product matches. It assumes the imported reports use the same currency when showing combined money totals.
 
-DuckDB reads the CSV bytes directly in browser memory, creates the raw tables and view, and performs the grouped, time-series, reconciliation, schema, and window queries. The UI receives query results, not the original reports. See [`src/lib/duckdb.ts`](src/lib/duckdb.ts) and [`src/lib/analytics.ts`](src/lib/analytics.ts).
+The browser strips Amazon's eight-line preamble, parses the two known CSV layouts into Arrow string columns, and inserts them into DuckDB-Wasm. DuckDB creates the normalized SQL view and performs the grouped, time-series, reconciliation, schema, and window queries. The UI receives query results. See [`src/lib/duckdb.ts`](src/lib/duckdb.ts) and [`src/lib/analytics.ts`](src/lib/analytics.ts).
 
 ## Privacy and scope
 
