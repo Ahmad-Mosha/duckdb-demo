@@ -59,94 +59,19 @@ export default function CommerceWorkspace() {
   return (
     <TooltipProvider delayDuration={250}>
       <div className="app-shell">
-        <header className="app-bar">
-          <div className="flex items-center gap-3">
-            <div className="brand-mark" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-              <span />
-            </div>
-            <span className="text-[18px] font-semibold tracking-[-0.03em]">
-              commerce<span className="text-neutral-400">/</span>lab
-            </span>
-            <span className="mx-2 h-4 w-px bg-neutral-800" />
-            <span className="hidden text-[13px] text-muted-foreground sm:inline">
-              Local workspace
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge
-              variant="outline"
-              className="rounded-sm border-neutral-700/70 px-2 font-mono text-[11px] font-normal tracking-wide text-neutral-400"
-            >
-              {data?.mode === 'Private' ? 'PRIVATE SESSION' : 'SYNTHETIC DEMO'}
-            </Badge>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Restore synthetic demo"
-                  onClick={workspace.loadDemo}
-                  disabled={!!busy}
-                >
-                  <RotateCcw className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent sideOffset={8}>Restore synthetic reports</TooltipContent>
-            </Tooltip>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" className="gap-2 rounded-sm px-3" disabled={!!busy}>
-                  <ArrowUpFromLine className="size-4" />
-                  Import report
-                  <ChevronDown className="ml-1 size-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-60 rounded-sm">
-                <DropdownMenuLabel>Choose report source</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={() => chooseFile('Amazon')}
-                  className="flex-col items-start gap-1 py-2.5"
-                >
-                  <span>Amazon</span>
-                  <span className="text-[12px] text-muted-foreground">
-                    Transaction CSV · 8-line preamble
-                  </span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={() => chooseFile('Noon')}
-                  className="flex-col items-start gap-1 py-2.5"
-                >
-                  <span>Noon</span>
-                  <span className="text-[12px] text-muted-foreground">
-                    Item-level finance report CSV
-                  </span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <p className="px-2 py-1.5 text-[12px] text-muted-foreground">
-                  Files are processed on this device.
-                </p>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <input
-              ref={fileInput}
-              type="file"
-              accept=".csv,text/csv"
-              hidden
-              aria-label="Commerce report file"
-              onChange={async (event) => {
-                const file = event.currentTarget.files?.[0]
-                if (file) await workspace.importFile(importSource.current, file)
-                if (fileInput.current) fileInput.current.value = ''
-              }}
-            />
-          </div>
-        </header>
         <Tabs value={view} onValueChange={setView} className="gap-0">
-          <div className="workspace-toolbar">
+          <header className="app-bar">
+            <div className="flex items-center gap-3">
+              <div className="brand-mark" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+              <span className="text-[18px] font-semibold tracking-[-0.03em]">
+                commerce<span className="text-neutral-400">/</span>lab
+              </span>
+            </div>
             <TabsList variant="line" className="workspace-tabs">
               <>
                 {views.map((item) => (
@@ -157,6 +82,85 @@ export default function CommerceWorkspace() {
                 ))}
               </>
             </TabsList>
+            <div className="flex items-center gap-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Restore synthetic demo"
+                    onClick={workspace.loadDemo}
+                    disabled={!!busy}
+                  >
+                    <RotateCcw className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent sideOffset={8}>Restore synthetic reports</TooltipContent>
+              </Tooltip>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" className="gap-2 rounded-sm px-3" disabled={!!busy}>
+                    <ArrowUpFromLine className="size-4" />
+                    Import report
+                    <ChevronDown className="ml-1 size-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-60 rounded-sm">
+                  <DropdownMenuLabel>Choose report source</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => chooseFile('Amazon')}
+                    className="flex-col items-start gap-1 py-2.5"
+                  >
+                    <span>Amazon</span>
+                    <span className="text-[12px] text-muted-foreground">
+                      Transaction CSV · 8-line preamble
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => chooseFile('Noon')}
+                    className="flex-col items-start gap-1 py-2.5"
+                  >
+                    <span>Noon</span>
+                    <span className="text-[12px] text-muted-foreground">
+                      Item-level finance report CSV
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <p className="px-2 py-1.5 text-[12px] text-muted-foreground">
+                    Files are processed on this device.
+                  </p>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <input
+                ref={fileInput}
+                type="file"
+                accept=".csv,text/csv"
+                hidden
+                aria-label="Commerce report file"
+                onChange={async (event) => {
+                  const file = event.currentTarget.files?.[0]
+                  if (file) await workspace.importFile(importSource.current, file)
+                  if (fileInput.current) fileInput.current.value = ''
+                }}
+              />
+            </div>
+          </header>
+          <div className="workspace-toolbar">
+            <div className="session-context">
+              <Badge
+                variant="outline"
+                className="rounded-sm border-neutral-700/70 px-2 font-mono text-[11px] font-normal tracking-wide text-neutral-400"
+              >
+                {data?.mode === 'Private' ? 'PRIVATE SESSION' : 'SYNTHETIC DEMO'}
+              </Badge>
+
+              <span className="context-divider" />
+              <span className="flex items-center gap-2">
+                <Database className="size-3.5" />
+                {data?.sources.join(' / ') || 'Opening local database'}
+              </span>
+            </div>
             <div className="flex items-center gap-4">
               <span className="hidden items-center gap-1.5 font-mono text-[12px] text-neutral-400 xl:flex">
                 <Database className="size-3" />

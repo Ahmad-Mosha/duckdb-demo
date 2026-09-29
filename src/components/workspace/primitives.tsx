@@ -20,12 +20,16 @@ export function SourceMark({ source }: { source: Source }) {
 }
 export function Panel({
   title,
+  index,
+  subtitle,
   description,
   aside,
   children,
   className,
 }: {
   title: string
+  index?: string
+  subtitle?: string
   description?: string
   aside?: React.ReactNode
   children: React.ReactNode
@@ -34,23 +38,38 @@ export function Panel({
   return (
     <section className={cn('analysis-panel', className)}>
       <div className="panel-heading">
-        <div className="flex items-center gap-2">
-          <h2 className="text-base font-semibold tracking-[-0.02em]">{title}</h2>
-          {description && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  aria-label={`About ${title}`}
-                  className="rounded-sm p-1 text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-foreground focus-visible:outline-1 focus-visible:outline-offset-2"
-                >
-                  <Info className="size-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent sideOffset={8} className="max-w-80 leading-relaxed">
-                {description}
-              </TooltipContent>
-            </Tooltip>
-          )}
+        <div className="panel-title-group">
+          <div className="flex items-center gap-2">
+            {index && (
+              <span className="section-index" aria-hidden="true">
+                {index}
+              </span>
+            )}
+            <h2
+              className={cn(
+                'font-semibold tracking-[-0.02em]',
+                index ? 'text-[19px]' : 'text-base',
+              )}
+            >
+              {title}
+            </h2>
+            {description && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    aria-label={`About ${title}`}
+                    className="rounded-sm p-1 text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-foreground focus-visible:outline-1 focus-visible:outline-offset-2"
+                  >
+                    <Info className="size-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent sideOffset={8} className="max-w-80 leading-relaxed">
+                  {description}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          {subtitle && <p className="section-subtitle">{subtitle}</p>}
         </div>
         {aside && <div className="text-[13px] text-muted-foreground">{aside}</div>}
       </div>
@@ -93,13 +112,12 @@ export function WorkspaceLoading({ message }: { message: string }) {
         <LoaderCircle className="size-4 animate-spin" />
         {message}
       </div>
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24 rounded-sm" />
+          <Skeleton key={i} className="h-52 rounded-sm" />
         ))}
       </div>
       <Skeleton className="h-80 rounded-sm" />
-      <Skeleton className="h-40 rounded-sm" />
     </div>
   )
 }
