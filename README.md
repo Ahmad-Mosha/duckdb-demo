@@ -4,6 +4,27 @@ Commerce Lab is a local analytical workspace built around **DuckDB-Wasm**. It tu
 
 The experiment is to make a small embedded analytical database the core of a commerce exploration tool: import reports, inspect their model, and ask further questions using the same database that powers the charts.
 
+## Interface
+
+These screens use the bundled synthetic Amazon and Noon reports. Select an image to view it at full size.
+
+| Overview                                                                                                                                     | Products                                                                                                                                |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| [![Settlement metrics, sales trend, marketplace comparison, and findings](public/screenshots/overview.png)](public/screenshots/overview.png) | [![Sortable SKU ledger, fee pressure chart, and sales concentration](public/screenshots/products.png)](public/screenshots/products.png) |
+| **Activity**                                                                                                                                 | **SQL workspace**                                                                                                                       |
+| [![Daily sales, event types, and data checks](public/screenshots/activity.png)](public/screenshots/activity.png)                             | [![DuckDB table catalog, SQL editor, and results pane](public/screenshots/sql-workspace.png)](public/screenshots/sql-workspace.png)     |
+
+## Run locally
+
+Requires Node.js 20.9 or newer.
+
+```bash
+npm install
+npm run dev
+```
+
+Open the URL printed by Next.js. The workspace loads synthetic Amazon and Noon reports on startup. Use **Import report → Amazon / Noon** to open a matching export from the local device. The first import replaces the synthetic session; later imports add or replace a marketplace. The **Restore synthetic demo** control clears the imported session.
+
 ## Where DuckDB does the work
 
 | Stage     | Implemented DuckDB usage                                                                                                                                                                       | Source                                      |
@@ -80,17 +101,6 @@ The current importer uses Papa Parse and Arrow, not DuckDB's CSV reader. There i
 Next.js App Router · TypeScript · Tailwind CSS · shadcn/ui (Radix) · DuckDB-Wasm
 
 The interface uses customized shadcn primitives, TanStack Table for sorting, Recharts for analytical plots, and CodeMirror for SQL. Geist and JetBrains Mono are bundled locally. Next.js produces a static export; there are no API routes or application services to deploy.
-
-## Run locally
-
-Requires Node.js 20.9 or newer.
-
-```bash
-npm install
-npm run dev
-```
-
-Open the URL printed by Next.js. The workspace loads synthetic Amazon and Noon reports on startup. Use **Import report → Amazon / Noon** to open a matching export from the local device. The first import replaces the synthetic session; later imports add or replace a marketplace. The **Restore synthetic demo** control clears the imported session.
 
 ## Analysis workspace
 
