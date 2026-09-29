@@ -46,28 +46,28 @@ export function SqlWorkspace({ schema }: { schema: SchemaRow[] }) {
   return (
     <div className="sql-workspace">
       <ResizablePanelGroup orientation="horizontal">
-        <ResizablePanel defaultSize="22%" minSize="185px" maxSize="35%">
+        <ResizablePanel defaultSize="26%" minSize="260px" maxSize="40%">
           <aside className="h-full overflow-auto bg-[#0d0d0d]">
             <div className="pane-heading">
               <span className="flex items-center gap-2">
                 <Database className="size-3.5" />
                 Catalog
               </span>
-              <span className="font-mono text-[10px] text-neutral-500">
+              <span className="font-mono text-[12px] text-neutral-400">
                 {tables.length} relations
               </span>
             </div>
             <div className="px-3 py-3">
               {tables.map((table) => (
-                <details open key={table} className="group mb-2">
-                  <summary className="flex cursor-pointer list-none items-center gap-2 rounded-sm px-2 py-2 text-xs text-neutral-200 hover:bg-neutral-900">
+                <details open={table === 'commerce_events'} key={table} className="group mb-2">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 rounded-sm px-2 py-2 text-sm text-neutral-200 hover:bg-neutral-900">
                     <ChevronDown className="size-3 transition-transform group-not-open:-rotate-90" />
                     {table === 'commerce_events' ? (
-                      <Braces className="size-3.5 text-neutral-500" />
+                      <Braces className="size-3.5 text-neutral-400" />
                     ) : (
-                      <Table2 className="size-3.5 text-neutral-500" />
+                      <Table2 className="size-3.5 text-neutral-400" />
                     )}
-                    <span className="font-mono text-[11px]">{table}</span>
+                    <span className="font-mono text-[13px] font-medium">{table}</span>
                   </summary>
                   <div className="ml-4 border-l border-border py-1">
                     {schema
@@ -75,7 +75,7 @@ export function SqlWorkspace({ schema }: { schema: SchemaRow[] }) {
                       .map((column) => (
                         <div
                           key={column.column_name}
-                          className="flex min-w-0 justify-between gap-3 px-3 py-1.5 text-[10px]"
+                          className="flex min-w-0 justify-between gap-2 px-3 py-2 text-[12px] hover:bg-white/[0.025]"
                         >
                           <span
                             className="truncate font-mono text-neutral-400"
@@ -83,7 +83,7 @@ export function SqlWorkspace({ schema }: { schema: SchemaRow[] }) {
                           >
                             {column.column_name}
                           </span>
-                          <span className="shrink-0 font-mono text-neutral-600">
+                          <span className="shrink-0 font-mono text-neutral-400">
                             {column.data_type}
                           </span>
                         </div>
@@ -95,18 +95,18 @@ export function SqlWorkspace({ schema }: { schema: SchemaRow[] }) {
           </aside>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel minSize="55%">
+        <ResizablePanel minSize="50%">
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel defaultSize="49%" minSize="220px">
               <section className="flex h-full flex-col">
                 <div className="pane-heading">
                   <span className="flex items-center gap-2">
                     <span className="size-1.5 rounded-full bg-neutral-500" />
-                    <span className="font-mono text-[11px]">exploration.sql</span>
+                    <span className="font-mono text-[13px]">exploration.sql</span>
                   </span>
                   <div className="flex items-center gap-2">
-                    <span className="mr-2 hidden text-[10px] text-neutral-500 md:block">
-                      Read-only · all loaded tables
+                    <span className="mr-2 hidden text-[12px] text-neutral-400 lg:block">
+                      Read-only
                     </span>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -129,7 +129,7 @@ export function SqlWorkspace({ schema }: { schema: SchemaRow[] }) {
                     >
                       <Play className="size-3" fill="currentColor" />
                       {running ? 'Running…' : 'Run query'}
-                      <kbd className="ml-3 font-mono text-[10px] opacity-50">⌘ ↵</kbd>
+                      <kbd className="ml-3 font-mono text-[12px] opacity-50">⌘ ↵</kbd>
                     </Button>
                   </div>
                 </div>
@@ -144,7 +144,7 @@ export function SqlWorkspace({ schema }: { schema: SchemaRow[] }) {
                 <div className="pane-heading">
                   <span>Query results</span>
                   {result ? (
-                    <span className="flex items-center gap-3 font-mono text-[10px] text-muted-foreground">
+                    <span className="flex items-center gap-3 font-mono text-[12px] text-muted-foreground">
                       <span>{result.rows.length} rows</span>
                       <span className="flex items-center gap-1">
                         <Clock3 className="size-3" />
@@ -152,7 +152,7 @@ export function SqlWorkspace({ schema }: { schema: SchemaRow[] }) {
                       </span>
                     </span>
                   ) : (
-                    <span className="font-mono text-[10px] text-neutral-600">200 ROW PREVIEW</span>
+                    <span className="font-mono text-[12px] text-neutral-400">200 ROW PREVIEW</span>
                   )}
                 </div>
                 {error ? (
@@ -162,8 +162,8 @@ export function SqlWorkspace({ schema }: { schema: SchemaRow[] }) {
                   >
                     <CircleAlert className="mt-0.5 size-4 shrink-0" />
                     <div>
-                      <p className="mb-2 text-xs font-medium">Query could not run</p>
-                      <pre className="whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-muted-foreground">
+                      <p className="mb-2 text-sm font-medium">Query could not run</p>
+                      <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-muted-foreground">
                         {error}
                       </pre>
                     </div>

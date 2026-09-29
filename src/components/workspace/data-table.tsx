@@ -62,11 +62,11 @@ export function DataTable<T>({
   })
   return (
     <div className="data-table-scroll overflow-auto" style={{ maxHeight }}>
-      <Table className="text-xs">
-        <TableHeader className="sticky top-0 z-10 bg-[#151515]">
+      <Table className="text-sm">
+        <TableHeader className="sticky top-0 z-10 bg-[#1a1a1a]">
           {table.getHeaderGroups().map((group) => (
             <TableRow key={group.id} className="hover:bg-transparent">
-              <TableHead className="w-10 pl-5 font-mono text-[10px] text-neutral-600">#</TableHead>
+              <TableHead className="w-10 pl-5 font-mono text-[12px] text-neutral-400">#</TableHead>
               {group.headers.map((header, i) => (
                 <TableHead
                   key={header.id}
@@ -78,7 +78,7 @@ export function DataTable<T>({
                         : 'none'
                   }
                   className={cn(
-                    'h-10 px-3 text-[11px] font-normal text-muted-foreground last:pr-5',
+                    'h-11 px-3 text-[13px] font-medium text-neutral-200 last:pr-5',
                     columns[i].numeric && 'text-right',
                     header.column.getIsSorted() && 'bg-white/[0.025] text-neutral-100',
                   )}
@@ -111,15 +111,15 @@ export function DataTable<T>({
                 key={row.id}
                 className="border-white/[0.055] even:bg-white/[0.012] hover:bg-white/[0.045]"
               >
-                <TableCell className="h-10 border-r border-white/[0.04] pl-5 pr-3 font-mono text-[10px] text-neutral-500">
+                <TableCell className="h-11 border-r border-white/[0.04] pl-5 pr-3 font-mono text-[12px] text-neutral-400">
                   {String(row.index + 1).padStart(2, '0')}
                 </TableCell>
                 {row.getVisibleCells().map((cell, i) => (
                   <TableCell
                     key={cell.id}
                     className={cn(
-                      'h-10 px-3 text-neutral-300 last:pr-5',
-                      columns[i].numeric && 'text-right font-mono text-[11px] tabular-nums',
+                      'h-11 px-3 text-neutral-200 last:pr-5',
+                      columns[i].numeric && 'text-right font-mono text-[13px] tabular-nums',
                     )}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

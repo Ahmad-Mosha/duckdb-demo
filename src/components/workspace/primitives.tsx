@@ -35,24 +35,24 @@ export function Panel({
     <section className={cn('analysis-panel', className)}>
       <div className="panel-heading">
         <div className="flex items-center gap-2">
-          <h2 className="text-[13px] font-medium tracking-[-0.01em]">{title}</h2>
+          <h2 className="text-base font-semibold tracking-[-0.02em]">{title}</h2>
           {description && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   aria-label={`About ${title}`}
-                  className="rounded-sm p-1 text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-foreground focus-visible:outline-1 focus-visible:outline-offset-2"
+                  className="rounded-sm p-1 text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-foreground focus-visible:outline-1 focus-visible:outline-offset-2"
                 >
-                  <Info className="size-3.5" />
+                  <Info className="size-4" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent sideOffset={8} className="max-w-72 leading-relaxed">
+              <TooltipContent sideOffset={8} className="max-w-80 leading-relaxed">
                 {description}
               </TooltipContent>
             </Tooltip>
           )}
         </div>
-        {aside && <div className="text-[11px] text-muted-foreground">{aside}</div>}
+        {aside && <div className="text-[13px] text-muted-foreground">{aside}</div>}
       </div>
       {children}
     </section>
@@ -70,8 +70,8 @@ export function ViewHeading({
   return (
     <div className="view-heading">
       <div>
-        <h1 className="text-[26px] font-medium leading-tight tracking-[-0.045em]">{title}</h1>
-        <p className="mt-1.5 text-xs text-muted-foreground">{description}</p>
+        <h1 className="text-[30px] font-semibold leading-tight tracking-[-0.04em]">{title}</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
       </div>
       {aside}
     </div>
@@ -80,17 +80,17 @@ export function ViewHeading({
 export function EmptyState({ title, detail }: { title: string; detail: string }) {
   return (
     <div className="flex min-h-44 flex-col items-center justify-center gap-2 px-6 text-center">
-      <Database className="mb-1 size-5 text-neutral-600" />
+      <Database className="mb-1 size-5 text-neutral-400" />
       <p className="text-sm text-neutral-300">{title}</p>
-      <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">{detail}</p>
+      <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">{detail}</p>
     </div>
   )
 }
 export function WorkspaceLoading({ message }: { message: string }) {
   return (
     <div className="space-y-6 p-7" role="status">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <LoaderCircle className="size-3.5 animate-spin" />
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <LoaderCircle className="size-4 animate-spin" />
         {message}
       </div>
       <div className="grid grid-cols-4 gap-6">
@@ -107,7 +107,7 @@ export function TechnicalBadge({ children }: { children: React.ReactNode }) {
   return (
     <Badge
       variant="outline"
-      className="gap-1.5 rounded-sm px-2 py-1 font-mono text-[10px] font-normal text-muted-foreground"
+      className="gap-1.5 rounded-sm px-2 py-1 font-mono text-[12px] font-normal text-muted-foreground"
     >
       {children}
     </Badge>

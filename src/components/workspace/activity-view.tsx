@@ -39,7 +39,7 @@ export function ActivityView({ data }: { data: WorkspaceData }) {
               {
                 key: 'event_type',
                 title: 'Transaction type',
-                cell: (row) => <code className="text-[11px]">{row.event_type}</code>,
+                cell: (row) => <code className="text-[13px]">{row.event_type}</code>,
               },
               { key: 'rows', title: 'Rows', numeric: true },
               {
@@ -58,9 +58,9 @@ export function ActivityView({ data }: { data: WorkspaceData }) {
           <div className="px-5">
             {data.snapshot.quality.map((row) => (
               <div key={row.marketplace} className="border-b border-border py-4 last:border-0">
-                <div className="mb-4 flex justify-between text-xs">
+                <div className="mb-4 flex justify-between text-sm">
                   <SourceMark source={row.marketplace} />
-                  <span className="font-mono text-[10px] text-neutral-500">{row.rows} rows</span>
+                  <span className="font-mono text-[12px] text-neutral-400">{row.rows} rows</span>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   {[
@@ -71,13 +71,13 @@ export function ActivityView({ data }: { data: WorkspaceData }) {
                     <div key={check.title}>
                       <span className="flex items-center gap-1.5 font-mono text-base">
                         {check.amount === 0 ? (
-                          <Check className="size-3 text-neutral-600" />
+                          <Check className="size-3 text-neutral-400" />
                         ) : (
                           <Minus className="size-3 text-neutral-400" />
                         )}
                         {check.amount}
                       </span>
-                      <span className="mt-1 block text-[10px] text-muted-foreground">
+                      <span className="mt-1 block text-[12px] text-muted-foreground">
                         {check.title}
                       </span>
                     </div>
@@ -86,7 +86,7 @@ export function ActivityView({ data }: { data: WorkspaceData }) {
               </div>
             ))}
           </div>
-          <p className="border-t border-border px-5 py-3 text-[10px] leading-relaxed text-muted-foreground">
+          <p className="border-t border-border px-5 py-3 text-[12px] leading-relaxed text-muted-foreground">
             Source-level fees and adjustments can legitimately lack a SKU. These counts are
             diagnostic.
           </p>

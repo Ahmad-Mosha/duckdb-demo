@@ -23,7 +23,7 @@ export function ProductsView({ data }: { data: WorkspaceData }) {
           <TechnicalBadge>{data.snapshot.products.length} SKU × marketplace rows</TechnicalBadge>
         }
       />
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 min-[900px]:grid-cols-[1.1fr_1fr]">
         <Panel
           title="Fee pressure"
           description="Each point is a SKU and marketplace. Vertical position is negated signed fees divided by positive sales; horizontal position is reported sales."
@@ -36,7 +36,7 @@ export function ProductsView({ data }: { data: WorkspaceData }) {
               {data.snapshot.summary.map((row) => (
                 <span
                   key={row.marketplace}
-                  className={row.marketplace === 'Noon' ? 'ml-2 text-neutral-500' : ''}
+                  className={row.marketplace === 'Noon' ? 'ml-2 text-neutral-400' : ''}
                 >
                   {row.marketplace === 'Amazon' ? '●' : '◆'} {row.marketplace}
                 </span>
@@ -53,17 +53,17 @@ export function ProductsView({ data }: { data: WorkspaceData }) {
             {data.snapshot.concentration.length ? (
               data.snapshot.concentration.slice(0, 8).map((row) => (
                 <div key={row.sku} className="concentration-item">
-                  <span className="font-mono text-[10px] text-neutral-600">
+                  <span className="font-mono text-[12px] text-neutral-400">
                     {String(row.rank).padStart(2, '0')}
                   </span>
-                  <code className="text-[11px] text-neutral-300">{row.sku}</code>
+                  <code className="text-[13px] text-neutral-300">{row.sku}</code>
                   <div className="h-1 bg-neutral-800">
                     <div
                       className="relative h-full bg-neutral-400 after:absolute after:-top-0.5 after:right-0 after:h-2 after:w-px after:bg-neutral-100"
                       style={{ width: `${row.cumulative_pct}%` }}
                     />
                   </div>
-                  <span className="text-right font-mono text-[10px]">
+                  <span className="text-right font-mono text-[12px]">
                     {pct(row.cumulative_pct)}
                   </span>
                 </div>
@@ -86,13 +86,13 @@ export function ProductsView({ data }: { data: WorkspaceData }) {
         className="mt-4"
         aside={
           <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-2 size-3.5 text-neutral-500" />
+            <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-neutral-400" />
             <Input
               aria-label="Filter SKUs"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Filter SKU…"
-              className="h-7 w-48 rounded-sm border-neutral-700/70 pl-8 text-[11px]"
+              className="h-9 w-52 rounded-sm border-neutral-700/70 pl-8 text-[13px]"
             />
           </div>
         }
@@ -105,7 +105,7 @@ export function ProductsView({ data }: { data: WorkspaceData }) {
             {
               key: 'sku',
               title: 'SKU',
-              cell: (row) => <code className="text-[11px] text-white">{row.sku}</code>,
+              cell: (row) => <code className="text-[13px] text-white">{row.sku}</code>,
             },
             {
               key: 'marketplace',

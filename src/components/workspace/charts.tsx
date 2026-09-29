@@ -22,21 +22,21 @@ import { EmptyState } from './primitives'
 const ink = '#eeeeee',
   secondary = '#777777',
   grid = '#242424'
-const axis = { fill: '#999999', fontSize: 10, fontFamily: 'IBM Plex Mono' }
+const axis = { fill: '#b3b3b3', fontSize: 12, fontFamily: 'JetBrains Mono Variable' }
 const tooltipStyle = {
   background: '#151515',
   border: '1px solid #383838',
   borderRadius: 3,
   padding: '10px 12px',
   boxShadow: '0 6px 20px #00000040',
-  fontFamily: 'IBM Plex Mono',
-  fontSize: 11,
+  fontFamily: 'JetBrains Mono Variable',
+  fontSize: 13,
   color: '#eeeeee',
 }
 
 export function SourceLegend({ sources }: { sources: Source[] }) {
   return (
-    <div className="flex gap-4 text-[10px] text-muted-foreground">
+    <div className="flex gap-4 text-[12px] text-muted-foreground">
       {sources.map((source) => (
         <span key={source} className="flex items-center gap-1.5">
           <i
@@ -52,7 +52,7 @@ export function SourceLegend({ sources }: { sources: Source[] }) {
     </div>
   )
 }
-export function DailySalesChart({ data, height = 246 }: { data: DailyPoint[]; height?: number }) {
+export function DailySalesChart({ data, height = 268 }: { data: DailyPoint[]; height?: number }) {
   if (!data.length)
     return (
       <EmptyState
@@ -79,12 +79,12 @@ export function DailySalesChart({ data, height = 246 }: { data: DailyPoint[]; he
             axisLine={false}
             tickLine={false}
             tickFormatter={(value: number) => money(value, true)}
-            width={48}
+            width={56}
           />
           <Tooltip
             contentStyle={tooltipStyle}
             labelStyle={{ color: '#aaaaaa', marginBottom: 6 }}
-            itemStyle={{ color: '#eeeeee', fontSize: 11 }}
+            itemStyle={{ color: '#eeeeee', fontSize: 13 }}
             formatter={(value) => money(Number(value))}
             labelFormatter={(label) => shortDate(String(label))}
           />
@@ -105,7 +105,7 @@ export function DailySalesChart({ data, height = 246 }: { data: DailyPoint[]; he
             stroke="#999999"
             fill="transparent"
             strokeWidth={1.5}
-            activeDot={{ r: 3, stroke: '#090909', strokeWidth: 2, fill: '#999999' }}
+            activeDot={{ r: 3, stroke: '#090909', strokeWidth: 2, fill: '#b3b3b3' }}
             strokeDasharray="4 3"
             connectNulls
             isAnimationActive={false}
@@ -117,7 +117,7 @@ export function DailySalesChart({ data, height = 246 }: { data: DailyPoint[]; he
 }
 export function MarketplaceChart({ data }: { data: SummaryRow[] }) {
   return (
-    <div className="h-36 px-4 pt-3" aria-label="Marketplace sales and settlement chart">
+    <div className="h-40 px-4 pt-3" aria-label="Marketplace sales and settlement chart">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
@@ -137,14 +137,14 @@ export function MarketplaceChart({ data }: { data: SummaryRow[] }) {
             type="category"
             dataKey="marketplace"
             tick={{ ...axis, fill: '#bbbbbb' }}
-            width={64}
+            width={76}
             axisLine={false}
             tickLine={false}
           />
           <Tooltip
             contentStyle={tooltipStyle}
             labelStyle={{ color: '#aaaaaa', marginBottom: 6 }}
-            itemStyle={{ color: '#eeeeee', fontSize: 11 }}
+            itemStyle={{ color: '#eeeeee', fontSize: 13 }}
             formatter={(value) => money(Number(value))}
             cursor={{ fill: '#ffffff06' }}
           />
@@ -176,7 +176,7 @@ export function FeePressureChart({ data }: { data: ProductRow[] }) {
       />
     )
   return (
-    <div className="h-64 px-3 pt-4" aria-label="Product sales versus fee rate chart">
+    <div className="h-72 px-3 pt-4" aria-label="Product sales versus fee rate chart">
       <ResponsiveContainer width="100%" height="100%">
         <ScatterChart margin={{ top: 8, right: 18, left: -6, bottom: 18 }}>
           <CartesianGrid stroke={grid} strokeDasharray="2 4" />
@@ -192,8 +192,8 @@ export function FeePressureChart({ data }: { data: ProductRow[] }) {
               value: 'REPORTED SALES',
               position: 'insideBottom',
               offset: -12,
-              fill: '#777',
-              fontSize: 9,
+              fill: '#aaaaaa',
+              fontSize: 11,
             }}
           />
           <YAxis
@@ -204,13 +204,13 @@ export function FeePressureChart({ data }: { data: ProductRow[] }) {
             axisLine={false}
             tickLine={false}
             tickFormatter={(value: number) => `${value}%`}
-            width={48}
+            width={56}
           />
           <Tooltip
             content={({ active, payload }) => {
               const row = payload?.[0]?.payload as ProductRow | undefined
               return active && row ? (
-                <div className="border border-neutral-700 bg-neutral-900 px-3 py-2 text-[11px] shadow-xl">
+                <div className="border border-neutral-700 bg-neutral-900 px-3 py-2 text-[13px] shadow-xl">
                   <div className="font-mono text-white">{row.sku}</div>
                   <div className="mb-2 text-muted-foreground">{row.marketplace}</div>
                   <div>{money(row.sales)} sales</div>
@@ -240,20 +240,20 @@ export function FeePressureChart({ data }: { data: ProductRow[] }) {
 
 export function SettlementBridgeChart({ data }: { data: Analytics['bridge'] }) {
   return (
-    <div className="h-[202px] px-3 pt-5" aria-label="Sales to settlement waterfall chart">
+    <div className="h-[228px] px-3 pt-5" aria-label="Sales to settlement waterfall chart">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
           <CartesianGrid stroke={grid} vertical={false} strokeDasharray="2 4" />
           <XAxis
             dataKey="name"
-            tick={{ ...axis, fontSize: 9 }}
+            tick={{ ...axis, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             interval={0}
           />
           <YAxis
             tick={axis}
-            width={49}
+            width={54}
             axisLine={false}
             tickLine={false}
             tickFormatter={(value: number) => money(value, true)}

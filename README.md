@@ -79,7 +79,7 @@ The current importer uses Papa Parse and Arrow, not DuckDB's CSV reader. There i
 
 Next.js App Router · TypeScript · Tailwind CSS · shadcn/ui (Radix) · DuckDB-Wasm
 
-The interface uses customized shadcn primitives, TanStack Table for sorting, Recharts for analytical plots, and CodeMirror for SQL. IBM Plex Sans and Mono are bundled locally. Next.js produces a static export; there are no API routes or application services to deploy.
+The interface uses customized shadcn primitives, TanStack Table for sorting, Recharts for analytical plots, and CodeMirror for SQL. Geist and JetBrains Mono are bundled locally. Next.js produces a static export; there are no API routes or application services to deploy.
 
 ## Run locally
 

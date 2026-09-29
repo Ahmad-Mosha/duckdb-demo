@@ -16,7 +16,7 @@ export function OverviewView({ data }: { data: WorkspaceData }) {
         aside={
           <TechnicalBadge>
             {fullDate(a.firstDay)} — {fullDate(a.lastDay)}
-            <span className="ml-1 text-neutral-600">/ reported dates</span>
+            <span className="ml-1 text-neutral-400">/ report dates</span>
           </TechnicalBadge>
         }
       />
@@ -39,23 +39,23 @@ export function OverviewView({ data }: { data: WorkspaceData }) {
         >
           <SettlementBridgeChart data={a.bridge} />
           <div className="mx-5 mb-4 flex items-baseline justify-between border-t border-border pt-4">
-            <span className="text-xs text-neutral-400">Commerce settlement</span>
-            <span className="font-mono text-lg tracking-tight">{money(a.settlement)}</span>
+            <span className="text-sm text-neutral-400">Commerce settlement</span>
+            <span className="font-mono text-xl tracking-tight">{money(a.settlement)}</span>
           </div>
-          <p className="px-5 pb-4 text-[10px] leading-relaxed text-neutral-500">
+          <p className="px-5 pb-4 text-[12px] leading-relaxed text-neutral-400">
             Excludes {money(a.payouts)} in payout transfers. Settlement does not include product
             cost.
           </p>
         </Panel>
       </div>
-      <div className="analysis-grid">
+      <div className="analysis-grid comparison-grid">
         <Panel
           title="Marketplace comparison"
           description="Amazon product sales and Noon net proceeds have different definitions. Compare directionally and check each source's date range."
           aside={
             <div className="flex gap-3">
               <span>■ Sales</span>
-              <span className="text-neutral-600">■ Settlement</span>
+              <span className="text-neutral-400">■ Settlement</span>
             </div>
           }
         >
@@ -89,7 +89,7 @@ export function OverviewView({ data }: { data: WorkspaceData }) {
             {a.periodsDiffer && <span className="text-neutral-300">Different report periods</span>}
           </div>
         </Panel>
-        <Panel title="Signals" aside={<ScanLine className="size-3.5" />}>
+        <Panel title="Report signals" aside={<ScanLine className="size-3.5" />}>
           <div className="divide-y divide-border px-5">
             <div className="signal-row">
               <div>
@@ -117,7 +117,7 @@ export function OverviewView({ data }: { data: WorkspaceData }) {
               <strong>{count(a.unmatched)}</strong>
             </div>
           </div>
-          <p className="px-5 py-4 text-[10px] leading-relaxed text-neutral-500">
+          <p className="px-5 py-4 text-[12px] leading-relaxed text-neutral-400">
             Deterministic observations from the loaded reports.
           </p>
         </Panel>
