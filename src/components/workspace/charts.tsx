@@ -176,7 +176,7 @@ export function FeePressureChart({ data }: { data: ProductRow[] }) {
       />
     )
   return (
-    <div className="h-72 px-3 pt-4" aria-label="Product sales versus fee rate chart">
+    <div className="h-60 pr-3 pt-4" aria-label="Product sales versus fee rate chart">
       <ResponsiveContainer width="100%" height="100%">
         <ScatterChart margin={{ top: 8, right: 18, left: -6, bottom: 18 }}>
           <CartesianGrid stroke={grid} strokeDasharray="2 4" />

@@ -7,7 +7,7 @@ import { Panel, SourceMark, TechnicalBadge, ViewHeading } from './primitives'
 
 export function ActivityView({ data }: { data: WorkspaceData }) {
   return (
-    <div className="workspace-content">
+    <div className="workspace-content notebook-content">
       <ViewHeading
         title="Transaction activity"
         description="Trace the daily series and inspect the source-native events behind it."
@@ -15,9 +15,14 @@ export function ActivityView({ data }: { data: WorkspaceData }) {
       />
       <Panel
         title="Daily reported sales"
+        index="01"
+        subtitle="Trace sales by event date before inspecting the source transactions below."
+        className="notebook-section"
         aside={<SourceLegend sources={data.snapshot.summary.map((row) => row.marketplace)} />}
       >
-        <DailySalesChart data={data.analytics.days} height={290} />
+        <div className="notebook-plot">
+          <DailySalesChart data={data.analytics.days} height={290} />
+        </div>
         <div className="panel-caption">
           <span>Payout transfers excluded</span>
           <span>Missing source dates are not counted as zero</span>
@@ -26,6 +31,8 @@ export function ActivityView({ data }: { data: WorkspaceData }) {
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_1fr]">
         <Panel
           title="Event types"
+          index="02"
+          className="notebook-section activity-table"
           description="Source-native transaction labels are retained. Signed refunds and updates remain in the analytical model."
         >
           <DataTable
@@ -53,6 +60,8 @@ export function ActivityView({ data }: { data: WorkspaceData }) {
         </Panel>
         <Panel
           title="Data checks"
+          index="03"
+          className="notebook-section"
           description="Reconciliation checks sales + fees + other against the reported total with a 0.02 tolerance."
         >
           <div className="px-5">
