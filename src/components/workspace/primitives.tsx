@@ -32,16 +32,16 @@ export function Panel({
   className?: string
 }) {
   return (
-    <section className={cn('min-w-0 border border-border bg-card', className)}>
-      <div className="flex min-h-13 items-center justify-between gap-4 border-b border-border px-5 py-3">
+    <section className={cn('analysis-panel', className)}>
+      <div className="panel-heading">
         <div className="flex items-center gap-2">
-          <h2 className="text-[13px] font-medium tracking-[0.01em]">{title}</h2>
+          <h2 className="text-[13px] font-medium tracking-[-0.01em]">{title}</h2>
           {description && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   aria-label={`About ${title}`}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="rounded-sm p-1 text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-foreground focus-visible:outline-1 focus-visible:outline-offset-2"
                 >
                   <Info className="size-3.5" />
                 </button>
@@ -52,7 +52,7 @@ export function Panel({
             </Tooltip>
           )}
         </div>
-        {aside && <div className="text-[10px] text-muted-foreground">{aside}</div>}
+        {aside && <div className="text-[11px] text-muted-foreground">{aside}</div>}
       </div>
       {children}
     </section>
@@ -68,9 +68,9 @@ export function ViewHeading({
   aside?: React.ReactNode
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div className="view-heading">
       <div>
-        <h1 className="text-2xl font-medium tracking-[-0.035em]">{title}</h1>
+        <h1 className="text-[26px] font-medium leading-tight tracking-[-0.045em]">{title}</h1>
         <p className="mt-1.5 text-xs text-muted-foreground">{description}</p>
       </div>
       {aside}
