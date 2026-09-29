@@ -67,18 +67,18 @@ export default function CommerceWorkspace() {
               <span />
               <span />
             </div>
-            <span className="text-[15px] font-medium tracking-[-0.03em]">
-              commerce<span className="text-neutral-500">/</span>lab
+            <span className="text-[18px] font-semibold tracking-[-0.03em]">
+              commerce<span className="text-neutral-400">/</span>lab
             </span>
             <span className="mx-2 h-4 w-px bg-neutral-800" />
-            <span className="hidden text-[11px] text-muted-foreground sm:inline">
+            <span className="hidden text-[13px] text-muted-foreground sm:inline">
               Local workspace
             </span>
           </div>
           <div className="flex items-center gap-3">
             <Badge
               variant="outline"
-              className="rounded-sm border-neutral-700/70 px-2 font-mono text-[9px] font-normal tracking-wide text-neutral-400"
+              className="rounded-sm border-neutral-700/70 px-2 font-mono text-[11px] font-normal tracking-wide text-neutral-400"
             >
               {data?.mode === 'Private' ? 'PRIVATE SESSION' : 'SYNTHETIC DEMO'}
             </Badge>
@@ -91,7 +91,7 @@ export default function CommerceWorkspace() {
                   onClick={workspace.loadDemo}
                   disabled={!!busy}
                 >
-                  <RotateCcw className="size-3.5" />
+                  <RotateCcw className="size-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent sideOffset={8}>Restore synthetic reports</TooltipContent>
@@ -99,7 +99,7 @@ export default function CommerceWorkspace() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" className="gap-2 rounded-sm px-3" disabled={!!busy}>
-                  <ArrowUpFromLine className="size-3.5" />
+                  <ArrowUpFromLine className="size-4" />
                   Import report
                   <ChevronDown className="ml-1 size-3" />
                 </Button>
@@ -112,7 +112,7 @@ export default function CommerceWorkspace() {
                   className="flex-col items-start gap-1 py-2.5"
                 >
                   <span>Amazon</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[12px] text-muted-foreground">
                     Transaction CSV · 8-line preamble
                   </span>
                 </DropdownMenuItem>
@@ -121,12 +121,12 @@ export default function CommerceWorkspace() {
                   className="flex-col items-start gap-1 py-2.5"
                 >
                   <span>Noon</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[12px] text-muted-foreground">
                     Item-level finance report CSV
                   </span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <p className="px-2 py-1.5 text-[10px] text-muted-foreground">
+                <p className="px-2 py-1.5 text-[12px] text-muted-foreground">
                   Files are processed on this device.
                 </p>
               </DropdownMenuContent>
@@ -151,14 +151,14 @@ export default function CommerceWorkspace() {
               <>
                 {views.map((item) => (
                   <TabsTrigger key={item.id} value={item.id} className="workspace-tab">
-                    <item.icon className="size-3.5" />
+                    <item.icon className="size-4" />
                     {item.name}
                   </TabsTrigger>
                 ))}
               </>
             </TabsList>
             <div className="flex items-center gap-4">
-              <span className="hidden items-center gap-1.5 font-mono text-[10px] text-neutral-500 xl:flex">
+              <span className="hidden items-center gap-1.5 font-mono text-[12px] text-neutral-400 xl:flex">
                 <Database className="size-3" />
                 {data ? `${count(data.analytics.rows)} events` : 'initializing'}
               </span>
@@ -167,16 +167,16 @@ export default function CommerceWorkspace() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-2 rounded-sm border-neutral-800 bg-transparent text-[11px] font-normal"
+                    className="gap-2 rounded-sm border-neutral-800 bg-transparent text-[13px] font-normal"
                     disabled={!!busy || view === 'sql'}
                   >
-                    <Layers3 className="size-3" />
+                    <Layers3 className="size-4" />
                     {view === 'sql'
                       ? 'All loaded tables'
                       : scope === 'All'
                         ? 'All marketplaces'
                         : scope}
-                    <ChevronDown className="size-3 text-neutral-500" />
+                    <ChevronDown className="size-3.5 text-neutral-400" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 rounded-sm">
@@ -204,7 +204,7 @@ export default function CommerceWorkspace() {
           {error && (
             <div
               role="alert"
-              className="mx-7 mt-5 flex items-center gap-3 border border-neutral-600 bg-neutral-900 px-4 py-3 text-xs"
+              className="mx-7 mt-5 flex items-center gap-3 border border-neutral-600 bg-neutral-900 px-4 py-3 text-sm"
             >
               <CircleAlert className="size-4 shrink-0" />
               <p className="flex-1">{error}</p>
@@ -248,7 +248,7 @@ export default function CommerceWorkspace() {
             )}
             {busy || 'DuckDB · in memory'}
             {data && !busy && (
-              <span className="ml-2 text-neutral-600">
+              <span className="ml-2 text-neutral-400">
                 {data.elapsedMs.toFixed(1)} ms / analysis
               </span>
             )}

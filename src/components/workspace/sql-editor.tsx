@@ -9,17 +9,17 @@ import { tags } from '@lezer/highlight'
 
 const theme = EditorView.theme(
   {
-    '&': { height: '100%', backgroundColor: '#101010', color: '#d4d4d4', fontSize: '12px' },
+    '&': { height: '100%', backgroundColor: '#101010', color: '#d4d4d4', fontSize: '14px' },
     '.cm-scroller': {
-      fontFamily: 'IBM Plex Mono, monospace',
-      lineHeight: '1.85',
+      fontFamily: 'JetBrains Mono Variable, monospace',
+      lineHeight: '1.8',
       overflow: 'auto',
     },
     '.cm-content': { padding: '18px 0', caretColor: '#ffffff' },
     '.cm-line': { padding: '0 18px' },
     '.cm-gutters': {
       backgroundColor: '#101010',
-      color: '#555555',
+      color: '#858585',
       borderRight: '1px solid #222222',
       paddingRight: '8px',
     },
@@ -37,9 +37,9 @@ const theme = EditorView.theme(
 const highlighting = syntaxHighlighting(
   HighlightStyle.define([
     { tag: [tags.keyword, tags.operatorKeyword], color: '#ffffff', fontWeight: '600' },
-    { tag: [tags.string, tags.special(tags.string)], color: '#999999' },
+    { tag: [tags.string, tags.special(tags.string)], color: '#bbbbbb' },
     { tag: [tags.number, tags.bool, tags.null], color: '#e5e5e5' },
-    { tag: tags.comment, color: '#666666', fontStyle: 'italic' },
+    { tag: tags.comment, color: '#aaaaaa', fontStyle: 'italic' },
     { tag: [tags.function(tags.variableName), tags.typeName], color: '#bfbfbf' },
   ]),
 )
