@@ -1,14 +1,12 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import { WorkspaceLoading } from './workspace/primitives'
 
-const Workspace = dynamic(() => import('@/App'), {
+const Workspace = dynamic(() => import('./workspace/commerce-workspace'), {
   ssr: false,
-  loading: () => (
-    <div className="p-8 text-sm text-muted-foreground">Preparing local workspace…</div>
-  ),
+  loading: () => <WorkspaceLoading message="Preparing local workspace" />,
 })
-
 export function WorkspaceClient() {
   return <Workspace />
 }

@@ -1,5 +1,3 @@
-import type { Row } from './commerce/types'
-
 export const money = (value: number, compact = false) =>
   new Intl.NumberFormat('en-EG', {
     minimumFractionDigits: compact ? 0 : 2,
@@ -14,5 +12,12 @@ export const shortDate = (date?: string) =>
         new Date(date),
       )
     : '—'
-export const value = (row: Row, key: string) => Number(row[key] ?? 0)
-export const label = (row: Row, key: string) => String(row[key] ?? '')
+export const fullDate = (date?: string) =>
+  date
+    ? new Intl.DateTimeFormat('en', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date(date))
+    : '—'

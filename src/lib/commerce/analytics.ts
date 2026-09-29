@@ -45,12 +45,34 @@ export function deriveAnalytics(snapshot: Snapshot) {
     .sort()
   const topThree =
     snapshot.concentration[Math.min(2, snapshot.concentration.length - 1)]?.cumulative_pct ?? 0
+  const adjustments = total('other') - payouts
+  const settlement = total('commerce_settlement')
+  const metricSources = (getAmount: (row: SummaryRow) => number) => {
+    const values = snapshot.summary.map((row) => ({
+      source: row.marketplace,
+      amount: getAmount(row),
+    }))
+    const scale = Math.max(...values.map((row) => Math.abs(row.amount)), 1)
+    return values.map((row) => ({ ...row, width: (Math.abs(row.amount) / scale) * 100 }))
+  }
   return {
     sales,
     fees,
     payouts,
-    adjustments: total('other') - payouts,
-    settlement: total('commerce_settlement'),
+    adjustments,
+    settlement,
+    metricSources: {
+      sales: metricSources((row) => row.sales),
+      fees: metricSources((row) => row.fees),
+      adjustments: metricSources((row) => row.other - row.payouts),
+      settlement: metricSources((row) => row.commerce_settlement),
+    },
+    bridge: [
+      { name: 'Sales', amount: sales, range: [0, sales] },
+      { name: 'Fees', amount: fees, range: [sales, sales + fees] },
+      { name: 'Other', amount: adjustments, range: [sales + fees, sales + fees + adjustments] },
+      { name: 'Settlement', amount: settlement, range: [0, settlement] },
+    ],
     rows: total('rows'),
     feeRate: sales ? (-100 * fees) / sales : 0,
     topThree,

@@ -64,7 +64,10 @@ export function useCommerceWorkspace() {
     error,
     revision,
     setScope: (next: Scope) => {
-      if (!busy) setScope(next)
+      if (!busy && next !== scope) {
+        setBusy('Querying marketplace')
+        setScope(next)
+      }
     },
     dismissError: () => setError(''),
     loadDemo: () => perform('Loading demo reports', restoreDemo, 'All'),

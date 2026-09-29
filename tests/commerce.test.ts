@@ -67,6 +67,17 @@ test('derived metrics exclude payout transfers and preserve missing source dates
   assert.equal(result.days[0].Noon, null)
   assert.equal(result.highFee, undefined)
   assert.equal(result.topThree, 0)
+  assert.equal(result.metricSources.adjustments[0].amount, 5)
+  assert.equal(result.metricSources.settlement[1].amount, 160)
+  assert.deepEqual(
+    result.bridge.map((step) => step.range),
+    [
+      [0, 300],
+      [300, 250],
+      [250, 255],
+      [0, 255],
+    ],
+  )
 })
 
 test('SQL preview accepts one read query and rejects write or multi-statement input', () => {
