@@ -21,12 +21,15 @@ import { EmptyState } from './primitives'
 
 const ink = '#eeeeee',
   secondary = '#777777',
-  grid = '#262626'
-const axis = { fill: '#888888', fontSize: 10, fontFamily: 'IBM Plex Mono' }
+  grid = '#242424'
+const axis = { fill: '#999999', fontSize: 10, fontFamily: 'IBM Plex Mono' }
 const tooltipStyle = {
-  background: '#1c1c1c',
+  background: '#151515',
   border: '1px solid #383838',
   borderRadius: 3,
+  padding: '10px 12px',
+  boxShadow: '0 6px 20px #00000040',
+  fontFamily: 'IBM Plex Mono',
   fontSize: 11,
   color: '#eeeeee',
 }
@@ -61,13 +64,14 @@ export function DailySalesChart({ data, height = 246 }: { data: DailyPoint[]; he
     <div className="w-full px-3 pt-5" style={{ height }} aria-label="Daily reported sales chart">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 5, right: 26, left: -3, bottom: 0 }}>
-          <CartesianGrid stroke={grid} vertical={false} />
+          <CartesianGrid stroke={grid} vertical={false} strokeDasharray="2 4" />
           <XAxis
             dataKey="day"
             tick={axis}
             axisLine={false}
             tickLine={false}
             minTickGap={32}
+            interval="preserveStartEnd"
             tickFormatter={shortDate}
           />
           <YAxis
@@ -79,6 +83,8 @@ export function DailySalesChart({ data, height = 246 }: { data: DailyPoint[]; he
           />
           <Tooltip
             contentStyle={tooltipStyle}
+            labelStyle={{ color: '#aaaaaa', marginBottom: 6 }}
+            itemStyle={{ color: '#eeeeee', fontSize: 11 }}
             formatter={(value) => money(Number(value))}
             labelFormatter={(label) => shortDate(String(label))}
           />
@@ -88,7 +94,8 @@ export function DailySalesChart({ data, height = 246 }: { data: DailyPoint[]; he
             stroke={ink}
             fill={ink}
             fillOpacity={0.045}
-            strokeWidth={1.6}
+            strokeWidth={1.8}
+            activeDot={{ r: 3, stroke: '#090909', strokeWidth: 2, fill: ink }}
             connectNulls
             isAnimationActive={false}
           />
@@ -97,7 +104,8 @@ export function DailySalesChart({ data, height = 246 }: { data: DailyPoint[]; he
             dataKey="Noon"
             stroke="#999999"
             fill="transparent"
-            strokeWidth={1.4}
+            strokeWidth={1.5}
+            activeDot={{ r: 3, stroke: '#090909', strokeWidth: 2, fill: '#999999' }}
             strokeDasharray="4 3"
             connectNulls
             isAnimationActive={false}
@@ -117,7 +125,7 @@ export function MarketplaceChart({ data }: { data: SummaryRow[] }) {
           barGap={5}
           margin={{ left: 0, right: 20, bottom: 0, top: 0 }}
         >
-          <CartesianGrid stroke={grid} horizontal={false} />
+          <CartesianGrid stroke={grid} horizontal={false} strokeDasharray="2 4" />
           <XAxis
             type="number"
             tick={axis}
@@ -135,6 +143,8 @@ export function MarketplaceChart({ data }: { data: SummaryRow[] }) {
           />
           <Tooltip
             contentStyle={tooltipStyle}
+            labelStyle={{ color: '#aaaaaa', marginBottom: 6 }}
+            itemStyle={{ color: '#eeeeee', fontSize: 11 }}
             formatter={(value) => money(Number(value))}
             cursor={{ fill: '#ffffff06' }}
           />
@@ -142,14 +152,14 @@ export function MarketplaceChart({ data }: { data: SummaryRow[] }) {
             dataKey="sales"
             name="Reported sales"
             fill={ink}
-            barSize={7}
+            barSize={8}
             isAnimationActive={false}
           />
           <Bar
             dataKey="commerce_settlement"
             name="Settlement"
             fill={secondary}
-            barSize={7}
+            barSize={8}
             isAnimationActive={false}
           />
         </BarChart>
@@ -233,7 +243,7 @@ export function SettlementBridgeChart({ data }: { data: Analytics['bridge'] }) {
     <div className="h-[202px] px-3 pt-5" aria-label="Sales to settlement waterfall chart">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
-          <CartesianGrid stroke={grid} vertical={false} />
+          <CartesianGrid stroke={grid} vertical={false} strokeDasharray="2 4" />
           <XAxis
             dataKey="name"
             tick={{ ...axis, fontSize: 9 }}

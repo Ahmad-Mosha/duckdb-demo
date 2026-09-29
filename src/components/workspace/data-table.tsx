@@ -80,11 +80,12 @@ export function DataTable<T>({
                   className={cn(
                     'h-10 px-3 text-[11px] font-normal text-muted-foreground last:pr-5',
                     columns[i].numeric && 'text-right',
+                    header.column.getIsSorted() && 'bg-white/[0.025] text-neutral-100',
                   )}
                 >
                   <button
                     className={cn(
-                      'inline-flex items-center gap-1.5 hover:text-white',
+                      'inline-flex items-center gap-1.5 rounded-sm py-1 transition-colors hover:text-white focus-visible:outline-1 focus-visible:outline-offset-4',
                       columns[i].numeric && 'justify-end',
                     )}
                     onClick={header.column.getToggleSortingHandler()}
@@ -106,8 +107,11 @@ export function DataTable<T>({
         <TableBody>
           {table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} className="border-white/[0.055] hover:bg-white/[0.035]">
-                <TableCell className="h-10 pl-5 font-mono text-[10px] text-neutral-600">
+              <TableRow
+                key={row.id}
+                className="border-white/[0.055] even:bg-white/[0.012] hover:bg-white/[0.045]"
+              >
+                <TableCell className="h-10 border-r border-white/[0.04] pl-5 pr-3 font-mono text-[10px] text-neutral-500">
                   {String(row.index + 1).padStart(2, '0')}
                 </TableCell>
                 {row.getVisibleCells().map((cell, i) => (

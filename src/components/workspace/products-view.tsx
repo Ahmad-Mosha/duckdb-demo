@@ -23,7 +23,7 @@ export function ProductsView({ data }: { data: WorkspaceData }) {
           <TechnicalBadge>{data.snapshot.products.length} SKU × marketplace rows</TechnicalBadge>
         }
       />
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2">
         <Panel
           title="Fee pressure"
           description="Each point is a SKU and marketplace. Vertical position is negated signed fees divided by positive sales; horizontal position is reported sales."
@@ -57,9 +57,9 @@ export function ProductsView({ data }: { data: WorkspaceData }) {
                     {String(row.rank).padStart(2, '0')}
                   </span>
                   <code className="text-[11px] text-neutral-300">{row.sku}</code>
-                  <div className="h-1.5 bg-neutral-800">
+                  <div className="h-1 bg-neutral-800">
                     <div
-                      className="h-full bg-neutral-300"
+                      className="relative h-full bg-neutral-400 after:absolute after:-top-0.5 after:right-0 after:h-2 after:w-px after:bg-neutral-100"
                       style={{ width: `${row.cumulative_pct}%` }}
                     />
                   </div>

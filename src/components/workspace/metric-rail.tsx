@@ -48,19 +48,25 @@ export function MetricRail({ analytics: a }: { analytics: Analytics }) {
               0{index + 1}
             </span>
           </div>
-          <div className="metric-amount">{money(metric.amount)}</div>
+          <div className="metric-amount">
+            <span className="sr-only">{money(metric.amount)}</span>
+            <span aria-hidden="true">
+              {money(metric.amount).split('.')[0]}
+              <span className="metric-decimals">.{money(metric.amount).split('.')[1]}</span>
+            </span>
+          </div>
           <p className="metric-hint">{metric.hint}</p>
           <div className="metric-breakdown" aria-label={`${metric.label} by source`}>
             {a.metricSources[metric.key].map((row) => (
               <div className="metric-source" key={row.source}>
                 <span className="metric-source-name">{row.source}</span>
+                <span className="metric-source-value">{money(row.amount)}</span>
                 <span className="metric-track" aria-hidden="true">
                   <span
                     className={row.source === 'Noon' ? 'metric-bar secondary' : 'metric-bar'}
                     style={{ width: `${row.width}%` }}
                   />
                 </span>
-                <span className="metric-source-value">{money(row.amount)}</span>
               </div>
             ))}
           </div>

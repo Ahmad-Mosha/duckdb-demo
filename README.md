@@ -1,6 +1,79 @@
 # Commerce Lab
 
-Commerce Lab is a browser-local analysis workspace for Amazon and Noon settlement CSVs. It uses DuckDB-Wasm to normalize two known report layouts, run analytical SQL, and inspect the results through a compact data workbench. The application has no server, account system, or hosted database.
+Commerce Lab is a local analytical workspace built around **DuckDB-Wasm**. It turns Amazon and Noon settlement exports into SQL tables, combines their different schemas in a typed view, and queries that view for marketplace comparisons, product concentration, fee pressure and reconciliation. Everything runs inside the browser.
+
+The experiment is to make a small embedded analytical database the core of a commerce exploration tool: import reports, inspect their model, and ask further questions using the same database that powers the charts.
+
+## Where DuckDB does the work
+
+| Stage     | Implemented DuckDB usage                                                                                                                                                                       | Source                                      |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| Load      | Arrow tables are inserted into an in-memory database. Source replacement and view creation run inside `BEGIN` / `COMMIT`, with `ROLLBACK` on failure.                                          | [database.ts](src/lib/commerce/database.ts) |
+| Normalize | SQL projections use `TRY_CAST`, `TRY_STRPTIME`, `NULLIF` and source-specific fee expressions. `UNION ALL` combines both projections in the `commerce_events` view.                             | [adapters.ts](src/lib/commerce/adapters.ts) |
+| Aggregate | `GROUP BY` calculates marketplace totals, daily activity, SKU-level fees and source-native transaction totals. Conditional sums separate payout transfers and flag reconciliation differences. | [queries.ts](src/lib/commerce/queries.ts)   |
+| Rank      | A CTE aggregates positive net sales by SKU; `ROW_NUMBER()` and cumulative `SUM(...) OVER (...)` produce the concentration ranking.                                                             | [queries.ts](src/lib/commerce/queries.ts)   |
+| Explore   | The SQL editor queries the same raw tables and normalized view. `information_schema.columns` supplies the catalog's column names and types.                                                    | [session.ts](src/lib/commerce/session.ts)   |
+
+A single [DuckDB runtime](src/lib/duckdb/runtime.ts) owns the browser worker and connection. Raw reports remain in its in-memory tables; predefined queries return aggregated result sets for rendering. JavaScript handles CSV parsing and Arrow construction before import, then combines aggregate totals, arranges chart series and formats results. It does not calculate the per-SKU rankings or scan raw report rows for the analytical views.
+
+### One query across two marketplaces
+
+This is the SQL workspace's default query. Both sources are queried through the normalized view, with payout transfers excluded from commerce activity:
+
+```sql
+SELECT
+  marketplace,
+  COUNT(*) AS events,
+  ROUND(SUM(sales_amount), 2) AS reported_sales,
+  ROUND(SUM(fee_amount), 2) AS fees,
+  ROUND(SUM(settlement_amount), 2) AS settlement
+FROM commerce_events
+WHERE NOT is_payout
+GROUP BY marketplace
+ORDER BY reported_sales DESC;
+```
+
+The built-in synthetic reports produce:
+
+| Marketplace | Events | Reported sales |       Fees | Settlement |
+| ----------- | -----: | -------------: | ---------: | ---------: |
+| Amazon      |    128 |      82,075.20 | -12,699.59 |  71,769.61 |
+| Noon        |     85 |      52,640.40 |  -8,887.36 |  43,753.04 |
+
+These are synthetic values, not merchant data. The remaining two demo rows are payout transfers.
+
+### Concentration with a window function
+
+The Products view uses this query for the all-marketplace scope. It first groups identical SKU text across sources, then computes rank and running share inside DuckDB:
+
+```sql
+WITH sku_sales AS (
+  SELECT sku, SUM(sales_amount) AS sales
+  FROM commerce_events
+  WHERE sku IS NOT NULL AND NOT is_payout
+  GROUP BY sku
+  HAVING SUM(sales_amount) > 0
+), ranked AS (
+  SELECT sku, ROUND(sales, 2) AS sales,
+    ROW_NUMBER() OVER (ORDER BY sales DESC)::INTEGER AS rank,
+    ROUND(
+      100 * SUM(sales) OVER (
+        ORDER BY sales DESC
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+      ) / SUM(sales) OVER (), 1
+    ) AS cumulative_pct
+  FROM sku_sales
+)
+SELECT * FROM ranked ORDER BY rank;
+```
+
+This result drives the cumulative bars and the top-three concentration signal. Changing the marketplace scope adds a source predicate before aggregation; it does not filter an already-computed ranking in React.
+
+### Why this architecture fits
+
+The same relational model supports the predefined views and ad hoc exploration. Transformations and analytical definitions can be read directly in SQL, and a new question can be investigated in the editor without exporting to another tool. DuckDB-Wasm keeps that database local while Next.js serves a static frontend.
+
+The current importer uses Papa Parse and Arrow, not DuckDB's CSV reader. There is no Parquet import, persistent database, remote query service or performance benchmark in this MVP. Displayed timings measure browser-side query round trips and result conversion; they are not engine profiling measurements.
 
 ## Stack
 
@@ -28,9 +101,9 @@ Open the URL printed by Next.js. The workspace loads synthetic Amazon and Noon r
 | Activity      | Daily sales by marketplace, source-native transaction type totals, and checks for missing dates, missing SKUs, and rows whose components do not match the reported total.                                                                               |
 | SQL workspace | Read-only `SELECT`/`WITH` queries against the normalized view and raw tables, a 200-row result preview, execution time, and a table/column catalog.                                                                                                     |
 
-DuckDB calculates the source aggregates, daily series, SKU ratios, rankings, and data checks. The UI combines returned marketplace totals for the all-source summary and draws charts from query results. Source and date coverage remain visible because the two exports can represent different periods and use different sales definitions.
+Source and date coverage remain visible because the two exports can represent different periods and use different sales definitions.
 
-## Data flow
+## Import and normalization
 
 ```text
 Amazon / Noon CSV → browser CSV parser → Arrow table → DuckDB-Wasm raw table
@@ -40,7 +113,7 @@ Amazon / Noon CSV → browser CSV parser → Arrow table → DuckDB-Wasm raw tab
                                  aggregate and window SQL queries → UI
 ```
 
-The importer handles the inspected 22-column CSV layouts. It removes the eight-line preamble from Amazon exports, parses each file into Arrow string columns, and inserts the result into `amazon_raw` or `noon_raw`. Source-specific DuckDB projections create the `commerce_events` view. The view retains signed amounts and source-native transaction labels. Imports replace source tables and the normalized view in one transaction. Invalid imports leave the existing session intact. See [the adapters](src/lib/commerce/adapters.ts) and [the analytical queries](src/lib/commerce/queries.ts).
+The importer handles the inspected 22-column CSV layouts. It removes the eight-line preamble from Amazon exports, parses each file into Arrow string columns, and inserts the result into `amazon_raw` or `noon_raw`. Source-specific DuckDB projections create the `commerce_events` view. The view retains signed amounts and source-native transaction labels. Invalid date/quantity casts become null; missing or unparseable monetary cells currently become zero, so reconciliation checks should be reviewed when importing a report. Imports replace source tables and the normalized view in one transaction. Invalid imports leave the existing session intact. See [the adapters](src/lib/commerce/adapters.ts) and [the analytical queries](src/lib/commerce/queries.ts).
 
 | `commerce_events` field | Amazon source                                      | Noon source                                                      |
 | ----------------------- | -------------------------------------------------- | ---------------------------------------------------------------- |
